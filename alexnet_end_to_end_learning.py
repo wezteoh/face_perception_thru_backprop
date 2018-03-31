@@ -144,7 +144,7 @@ e2e_graph.predict_graph()
 
 
 with tf.Session() as sess:
-    train(e2e_graph, 60, training_set, training_labels, validation_set, validation_labels, 1E-2, 5E-4, 0.5, 1500, 'alexnet_weights.pkl', 'transfer_learning_fc_weights_17.pkl', sess)
+    train(e2e_graph, 85, training_set, training_labels, validation_set, validation_labels, 1E-2, 5E-4, 0.5, 1500, 'alexnet_weights.pkl', 'transfer_learning_fc_weights_17.pkl', sess)
 
 with tf.Session() as sess:
     test(e2e_graph, test_set, test_labels, 'end_to_end_learning_weights_17.pkl', sess)
