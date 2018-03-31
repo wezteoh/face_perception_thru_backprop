@@ -142,11 +142,13 @@ training_labels, validation_labels, test_labels = label_sets
 e2e_graph = end_to_end_learning_graph(17, 100, alexnet_face_classifier)
 e2e_graph.predict_graph()
 
+"""
 with tf.Session() as sess:
     train(e2e_graph, 30, training_set, training_labels, validation_set, validation_labels, 1E-2, 5E-4, 0.5, 1000, 'alexnet_weights.pkl', 'transfer_learning_fc_weights_17.pkl', sess)
-    
+"""
+
 with tf.Session() as sess:
-    test(e2e_graph, test_set, test_labels, 'end_to_end_learning_weights2.pkl', sess)
+    test(e2e_graph, test_set, test_labels, 'end_to_end_learning_weights_17.pkl', sess)
     
 
         
