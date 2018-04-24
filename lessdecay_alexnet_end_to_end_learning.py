@@ -26,9 +26,7 @@ class end_to_end_learning_graph:
     def train_graph(self, rate, decay_lam=0):    
         # cost function
         cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels = self.labels_1hot, logits=self.cnn.fc2))
-        decay_penalty = decay_lam*(tf.reduce_sum(tf.square(self.cnn.fc1W))+tf.reduce_sum(tf.square(self.cnn.fc2W))\
-        +tf.reduce_sum(tf.square(self.cnn.conv1W))+ tf.reduce_sum(tf.square(self.cnn.conv2W))+tf.reduce_sum(tf.square(self.cnn.conv3W))\
-        + tf.reduce_sum(tf.square(self.cnn.conv4W)) + tf.reduce_sum(tf.square(self.cnn.conv5W)))
+        decay_penalty = decay_lam*(tf.reduce_sum(tf.square(self.cnn.fc1W))+tf.reduce_sum(tf.square(self.cnn.fc2W)))
         
         self.cost = cross_entropy + decay_penalty
         self.train_step = tf.train.AdamOptimizer(rate).minimize(self.cost)
@@ -104,7 +102,7 @@ def train(graph, batch_size, training_set, training_labels, validation_set, vali
 
         
     # plot learning curves
-    cPickle.dump(best_weights, open('end_to_end_learning_weights_17_trial2.pkl', 'wb')) 
+    cPickle.dump(best_weights, open('end_to_end_learning_weights_17_trial2_ld.pkl', 'wb')) 
     f1 = plt.figure(1)
     plt.plot(range(5, iter+1, 5), train_accuracies, color='blue', linestyle='solid')
     plt.plot(range(5, iter+1, 5), validation_accuracies, color='red', linestyle='solid')
@@ -147,7 +145,7 @@ with tf.Session() as sess:
     train(e2e_graph, 85, training_set, training_labels, validation_set, validation_labels, 1E-2, 5E-4, 0.5, 1500, 'alexnet_weights.pkl', 'transfer_learning_fc_weights_17_trial2.pkl', sess)
 
 with tf.Session() as sess:
-    test(e2e_graph, test_set, test_labels, 'end_to_end_learning_weights_17_trial2.pkl', sess)
+    test(e2e_graph, test_set, test_labels, 'end_to_end_learning_weights_17_trial2_ld.pkl', sess)
     
 
         
