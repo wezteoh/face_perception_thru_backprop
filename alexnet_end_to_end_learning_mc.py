@@ -109,12 +109,14 @@ def train(graph, batch_size, training_set, training_labels, validation_set, vali
     plt.plot(range(5, iter+1, 5), train_accuracies, color='blue', linestyle='solid')
     plt.plot(range(5, iter+1, 5), validation_accuracies, color='red', linestyle='solid')
     f1.savefig("e2e_accuracies_17faces_trial{}.pdf".format(trial_num), bbox_inches='tight')
+    plt.close()
             
     f2 = plt.figure(2)
     plt.plot(range(5, iter+1, 5), train_costs, color='blue', linestyle='solid')
     plt.plot(range(5, iter+1, 5), validation_costs, color='red', linestyle='solid')
     f2.savefig("e2e_costs_17faces_trial{}.pdf".format(trial_num), bbox_inches='tight')
-         
+    plt.close()
+    
     print('best validation accuracy is {}'.format(best_validation_accuracy))
     print('best validation cost is {}'.format(best_validation_cost))
     print('corresponding training accuracy is {}'.format(sess.run(graph.accuracy, feed_dict={graph.inputs:batch_xs, graph.labels_1hot:batch_ys, graph.keep_prob:1.0})))
