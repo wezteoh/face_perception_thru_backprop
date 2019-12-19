@@ -3,14 +3,14 @@ import tensorflow as tf
 import os
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')
-import _pickle as cPickle
+import _pickle
 
 from scipy.io import savemat
 from scipy.io import loadmat
 
 from alexnet_face_classifier import * 
 from utils import *
-
+import csv
 
 class transfer_learning_graph:
     def __init__(self, num_classes, nhid, cnn):
@@ -35,7 +35,7 @@ class transfer_learning_graph:
         
 
 
-def train(graph, batch_size, training_set, training_labels, validation_set, validation_labels, decay_lambda, rate, keep_prob, iter, weight_file1, weight_file2, sess):
+def train(graph, batch_size, training_set, training_labels, validation_set, validation_labels, decay_lambda, rate, keep_prob, iter, weight_file1, weight_file2, trial_num, sess):
     
     # create learning graph
     graph.train_graph(rate, decay_lambda)
@@ -95,16 +95,18 @@ def train(graph, batch_size, training_set, training_labels, validation_set, vali
 
         
     # plot learning curves
-    cPickle.dump(best_weights, open('transfer_learning_fc_weights_17_trial2.pkl', 'wb')) 
+    _pickle.dump(best_weights, open('transfer_learning_fc_weights_17_trial{}.pkl'.format(trial_num), 'wb')) 
     f1 = plt.figure(1)
     plt.plot(range(5, iter+1, 5), train_accuracies, color='blue', linestyle='solid')
     plt.plot(range(5, iter+1, 5), validation_accuracies, color='red', linestyle='solid')
-    f1.savefig("tl_accuracies_17faces.pdf", bbox_inches='tight')
+    f1.savefig("tl_accuracies_17faces_trial{}.pdf".format(trial_num), bbox_inches='tight')
+    plt.close()
             
     f2 = plt.figure(2)
     plt.plot(range(5, iter+1, 5), train_costs, color='blue', linestyle='solid')
     plt.plot(range(5, iter+1, 5), validation_costs, color='red', linestyle='solid')
-    f2.savefig('tl_costs_17faces.pdf', bbox_inches='tight')
+    f2.savefig('tl_costs_17faces_trial{}.pdf'.format(trial_num), bbox_inches='tight')
+    plt.close()
          
     print('best validation accuracy is {}'.format(best_validation_accuracy))
     print('best validation cost is {}'.format(best_validation_cost))
@@ -112,11 +114,15 @@ def train(graph, batch_size, training_set, training_labels, validation_set, vali
     print('corresponding training cost is {}'.format(sess.run(graph.cost, feed_dict={graph.f_maps:batch_xs, graph.labels_1hot:batch_ys, graph.keep_prob:1.0})))
     
     
+    return best_validation_accuracy, train_accuracy
+    
+    
     
 def test(graph, test_set, test_labels, weight_file, sess):
     graph.cnn.load_weights(weight_file, sess, fc_only=True)
     test_accuracy = sess.run(graph.accuracy, feed_dict={graph.f_maps:test_set, graph.labels_1hot:test_labels, graph.keep_prob:1.0})
     print('test accuracy is {}'.format(test_accuracy))
+    return test_accuracy
     
     
     
@@ -129,19 +135,24 @@ full_sets, label_sets = get_data_and_labels('training_set_17_conv5.pkl', 'valida
 training_set, validation_set, test_set = full_sets
 training_labels, validation_labels, test_labels = label_sets
 
-    
-tl_graph = transfer_learning_graph(17, 100, alexnet_face_classifier)
-tl_graph.predict_graph()
+for i in range(3,12):
+    tf.reset_default_graph()
+    tl_graph = transfer_learning_graph(17, 100, alexnet_face_classifier)
+    tl_graph.predict_graph()
 
-with tf.Session() as sess:
-    train(tl_graph, 51, training_set, training_labels, validation_set, validation_labels, 1E-2, 5E-4, 0.5, 1000,'alexnet_weights.pkl', None, sess)
+    with tf.Session() as sess:
+        validation_accuracy, train_accuracy = train(tl_graph, 51, training_set, training_labels, validation_set, validation_labels, 1E-2, 5E-4, 0.5, 1000,'alexnet_weights.pkl', None, i, sess)
     
-with tf.Session() as sess:
-    test(tl_graph, test_set, test_labels, 'transfer_learning_fc_weights_17_trial2.pkl', sess)
+    weight_file = 'transfer_learning_fc_weights_17_trial{}.pkl'.format(i)
+    with tf.Session() as sess:
+        test_accuracy = test(tl_graph, test_set, test_labels, weight_file, sess)
     
-
-        
-        
+    fname = 'trial{}.csv'.format(i)
+    with open(fname, 'w') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['train_accuracy', 'validation_accuracy', 'test_accuracy'])
+        writer.writerow([train_accuracy, validation_accuracy, test_accuracy])
+    
         
         
     
